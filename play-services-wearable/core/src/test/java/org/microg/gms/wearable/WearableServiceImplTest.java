@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 microG Project Team
+ * Copyright (C) 2025 microG Project Team
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ public class WearableServiceImplTest {
     }
 
     @Test
-    public void testPutConfig_whenTosNotAccepted_shouldLaunchTosActivity() throws Exception {
+    public void testPutConfig_whenTosNotAccepted_shouldLaunchTosActivityAndAccept() throws Exception {
         SharedPreferences prefs = context.getSharedPreferences("WearablePrefs", Context.MODE_PRIVATE);
         prefs.edit().putBoolean("tos_accepted", false).apply();
 
@@ -66,6 +66,13 @@ public class WearableServiceImplTest {
 
         Intent startedIntent = ShadowApplication.getInstance().getNextStartedActivity();
         assertEquals(TermsOfServiceActivity.class.getCanonicalName(), startedIntent.getComponent().getClassName());
+
+        android.app.PendingIntent pendingIntent = startedIntent.getParcelableExtra("pendingIntent");
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra("resultCode", -1); // RESULT_OK
+        pendingIntent.send(context, 0, resultIntent);
+
+        verify(callbacks).onStatus(Status.SUCCESS);
     }
 
     @Test
